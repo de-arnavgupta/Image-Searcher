@@ -19,6 +19,43 @@ function initApp() {
     setupPinView();
 }
 
+function setupImageZoom() {
+    if (window.innerWidth <= 768) return; // Disable feature on mobile
+
+    const modal = document.createElement('div');
+    modal.className = 'image-modal';
+    modal.innerHTML = `<div class="image-modal-content">
+                            <span class="close-btn">&times;</span>
+                            <img src="" alt="Zoomed Image">
+                       </div>`;
+    document.body.appendChild(modal);
+
+    const modalImg = modal.querySelector('img');
+    const closeButton = modal.querySelector('.close-btn');
+
+    document.querySelectorAll('.image-card img').forEach(img => {
+        img.addEventListener('click', (e) => {
+            modal.style.display = 'flex';
+            modalImg.src = e.target.src;
+            setTimeout(() => modal.classList.add('show'), 10);
+        });
+    });
+
+    closeButton.addEventListener('click', () => closeModal(modal));
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal(modal);
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeModal(modal);
+    });
+}
+
+function closeModal(modal) {
+    modal.classList.remove('show');
+    setTimeout(() => modal.style.display = 'none', 300);
+}
+
 function initCursorEffect() {
     const cursor = document.querySelector('.cursor-glow');
     let lastX = 0, lastY = 0;
@@ -264,7 +301,10 @@ function displayImages(images, append = false) {
         sentinel.className = 'scroll-sentinel';
         imageGrid.appendChild(sentinel);
     }
+
+    setupImageZoom(); // Call here to ensure zooming works for new images
 }
+
 
 function createImageCard(image) {
     const card = document.createElement('div');
