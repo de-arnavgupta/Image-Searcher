@@ -86,31 +86,30 @@ function createClickEffect(e) {
     setTimeout(() => clickEffect.remove(), 500);
 }
 
+function isPinViewActive() {
+    const pinViewBtn = document.querySelector('.pin-view-btn');
+    return pinViewBtn ? pinViewBtn.classList.contains('active') : false;
+}
+
 function setupInfiniteScroll() {
-    // Create and observe a sentinel element for infinite scrolling
     const sentinel = document.createElement('div');
     sentinel.className = 'sentinel';
-    sentinel.style.height = '1px'; // Make it invisible
-
     const imageGrid = document.getElementById('imageGrid');
     imageGrid.appendChild(sentinel);
 
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
-            if (entry.isIntersecting && !isLoading && lastSearchQuery) {
+            if (entry.isIntersecting && !isLoading && lastSearchQuery && !isPinViewActive()) {
                 loadMoreImages();
             }
         });
-    }, {
-        rootMargin: '100px'
-    });
+    }, { rootMargin: '100px' });
 
     observer.observe(sentinel);
 
-    // Add scroll event listener as backup
     window.addEventListener('scroll', () => {
         if ((window.innerHeight + window.scrollY) >= document.documentElement.scrollHeight - 1000) {
-            if (!isLoading && lastSearchQuery) {
+            if (!isLoading && lastSearchQuery && !isPinViewActive()) {
                 loadMoreImages();
             }
         }
@@ -118,7 +117,7 @@ function setupInfiniteScroll() {
 }
 
 async function loadMoreImages() {
-    if (isLoading) return;
+    if (isLoading || isPinViewActive()) return;
     isLoading = true;
     showLoading(true);
 
@@ -132,10 +131,10 @@ async function loadMoreImages() {
         if (!response.ok) throw new Error('Network response was not ok');
 
         const data = await response.json();
-        if (data.results && data.results.length > 0) {
+        if (data.results?.length) {
             currentImages = [...currentImages, ...data.results];
-            const activeFilter = document.querySelector('.filter-btn.active');
-            if (activeFilter && activeFilter.textContent.toLowerCase() !== 'all') {
+            const activeFilter = document.querySelector('.filter-btn:not(.pin-view-btn).active');
+            if (activeFilter?.textContent.toLowerCase() !== 'all') {
                 filterImages(activeFilter.textContent.toLowerCase());
             } else {
                 displayImages(data.results, true);
@@ -144,12 +143,13 @@ async function loadMoreImages() {
     } catch (error) {
         console.error('Error loading more images:', error);
         showError('Failed to load more images. Please try again.');
-        currentPage--; // Revert page increment on error
+        currentPage--;
     } finally {
         isLoading = false;
         showLoading(false);
     }
 }
+
 
 function setupFilterListeners() {
     const filters = document.querySelectorAll('.filter-btn');
@@ -323,17 +323,14 @@ function setupPinView() {
     const pinViewBtn = document.createElement('button');
     pinViewBtn.className = 'pin-view-btn filter-btn';
     pinViewBtn.innerHTML = '<i class="fas fa-thumbtack"></i> Pins';
-
     document.querySelector('.filters').appendChild(pinViewBtn);
 
     pinViewBtn.addEventListener('click', () => {
         if (pinViewBtn.classList.contains('active')) {
-            // Deactivate pin view and show all images
             pinViewBtn.classList.remove('active');
             document.querySelector('.filter-btn:first-child').classList.add('active');
             displayImages(currentImages);
         } else {
-            // Activate pin view
             document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
             pinViewBtn.classList.add('active');
             displayPinnedImages();
@@ -350,22 +347,27 @@ async function displayPinnedImages() {
         return;
     }
 
-    const pinnedImagesData = await Promise.all(
-        [...pinnedImages].map(async id => {
-            try {
-                const response = await fetch(`https://api.unsplash.com/photos/${id}`, {
-                    headers: { 'Authorization': `Client-ID ${ACCESS_KEY}` }
-                });
-                return await response.json();
-            } catch (error) {
-                console.error('Failed to fetch pinned image:', error);
-                return null;
-            }
-        })
-    );
-
-    displayImages(pinnedImagesData.filter(img => img !== null));
+    showLoading(true);
+    try {
+        const pinnedImagesData = await Promise.all(
+            [...pinnedImages].map(async id => {
+                try {
+                    const response = await fetch(`https://api.unsplash.com/photos/${id}`, {
+                        headers: { 'Authorization': `Client-ID ${ACCESS_KEY}` }
+                    });
+                    return await response.json();
+                } catch (error) {
+                    console.error('Failed to fetch pinned image:', error);
+                    return null;
+                }
+            })
+        );
+        displayImages(pinnedImagesData.filter(img => img !== null));
+    } finally {
+        showLoading(false);
+    }
 }
+
 
 function createImageCard(image) {
     const card = document.createElement('div');
