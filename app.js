@@ -27,22 +27,26 @@ function initCursorEffect() {
     const updateCursor = (e) => {
         const currentX = e.clientX;
         const currentY = e.clientY;
+
         const deltaX = currentX - lastX;
         const deltaY = currentY - lastY;
         const speed = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+
         cursor.style.left = `${currentX}px`;
         cursor.style.top = `${currentY}px`;
+
         const size = Math.min(100, 200 + speed * 2);
         cursor.style.width = `${size}px`;
         cursor.style.height = `${size}px`;
+
         hue = (hue + speed * 0.3) % 360;
-        cursor.style.background = `
-            radial-gradient(circle,
+        cursor.style.background =
+            `radial-gradient(circle,
                 hsla(${hue}, 80%, 60%, 0.15) 0%,
                 hsla(${(hue + 60) % 360}, 80%, 60%, 0.1) 50%,
                 transparent 70%
-            )
-        `;
+            )`;
+
         lastX = currentX;
         lastY = currentY;
     };
@@ -63,13 +67,12 @@ function createClickEffect(e) {
     const cursor = document.querySelector('.cursor-glow');
     const clickEffect = cursor.cloneNode(true);
 
-    clickEffect.style.cssText = `
-        left: ${e.clientX}px;
+    clickEffect.style.cssText =
+        `left: ${e.clientX}px;
         top: ${e.clientY}px;
         transition: all 0.5s ease;
         opacity: 0.5;
-        pointer-events: none;
-    `;
+        pointer-events: none;`;
 
     document.body.appendChild(clickEffect);
 
@@ -267,8 +270,8 @@ function createImageCard(image) {
     const card = document.createElement('div');
     card.className = 'image-card';
 
-    card.innerHTML = `
-        <img src="${image.urls.regular}" alt="${image.alt_description || 'Unsplash image'}" 
+    card.innerHTML =
+        `<img src="${image.urls.regular}" alt="${image.alt_description || 'Unsplash image'}" 
              loading="lazy" />
         <div class="image-info">
             <p class="photographer">By ${image.user.name}</p>
@@ -277,8 +280,7 @@ function createImageCard(image) {
                 <span><i class="fas fa-calendar"></i> ${new Date(image.created_at).toLocaleDateString()}</span>
             </div>
             <a href="${image.links.html}" target="_blank" class="view-link">View on Unsplash</a>
-        </div>
-    `;
+        </div>`;
 
     const img = card.querySelector('img');
     card.addEventListener('mouseenter', () => img.style.transform = 'scale(1.1)');
@@ -319,55 +321,35 @@ function setupPinView() {
     document.querySelector('.filters').appendChild(pinViewBtn);
 
     pinViewBtn.addEventListener('click', () => {
+        pinViewBtn.classList.toggle('active');
         if (pinViewBtn.classList.contains('active')) {
-            pinViewBtn.classList.remove('active');
-            document.querySelector('.filter-btn:first-child').classList.add('active');
-            displayImages(currentImages);
-        } else {
-            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-            pinViewBtn.classList.add('active');
             displayPinnedImages();
+        } else {
+            displayImages(currentImages);
         }
     });
 }
 
-async function displayPinnedImages() {
+function displayPinnedImages() {
     const imageGrid = document.getElementById('imageGrid');
     imageGrid.innerHTML = '';
 
-    if (pinnedImages.size === 0) {
-        imageGrid.innerHTML = '<div class="no-results">No pinned images yet. Pin some images to see them here!</div>';
-        return;
-    }
+    const fragment = document.createDocumentFragment();
+    currentImages.forEach(image => {
+        if (pinnedImages.has(image.id)) {
+            fragment.appendChild(createImageCard(image));
+        }
+    });
 
-    showLoading(true);
-    try {
-        const pinnedImagesData = await Promise.all(
-            [...pinnedImages].map(async id => {
-                try {
-                    const response = await fetch(`https://api.unsplash.com/photos/${id}`, {
-                        headers: { 'Authorization': `Client-ID ${ACCESS_KEY}` }
-                    });
-                    return await response.json();
-                } catch (error) {
-                    console.error('Failed to fetch pinned image:', error);
-                    return null;
-                }
-            })
-        );
-        displayImages(pinnedImagesData.filter(img => img !== null));
-    } finally {
-        showLoading(false);
-    }
+    imageGrid.appendChild(fragment);
 }
-
 function createImageCard(image) {
     const card = document.createElement('div');
     card.className = 'image-card';
     const isPinned = pinnedImages.has(image.id);
 
-    card.innerHTML = `
-        <div class="image-actions">
+    card.innerHTML =
+        `<div class="image-actions">
             <button class="pin-btn ${isPinned ? 'pinned' : ''}" data-id="${image.id}">
                 <i class="fas ${isPinned ? 'fa-thumbtack' : 'fa-thumbtack'}"></i>
             </button>
@@ -381,8 +363,7 @@ function createImageCard(image) {
                 <span><i class="fas fa-calendar"></i> ${new Date(image.created_at).toLocaleDateString()}</span>
             </div>
             <a href="${image.links.html}" target="_blank" class="view-link">View on Unsplash</a>
-        </div>
-    `;
+        </div>`;
 
     const pinBtn = card.querySelector('.pin-btn');
     pinBtn.addEventListener('click', (e) => {
@@ -455,59 +436,54 @@ const styles = `
     width: 36px;
     height: 36px;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+}
+
+.pin-btn:hover {
+    transform: translateY(-2px);
+    background: white;
 }
 
 .pin-btn.pinned {
-    background-color: #ff5733;
+    background: var(--primary-color);
+    color: white;
 }
 
-.pin-btn i {
-    font-size: 18px;
-    color: #333;
+.pin-btn.animate {
+    animation: pinPop 0.3s ease;
 }
 
-.image-card:hover .pin-btn {
-    background-color: rgba(0, 0, 0, 0.7);
+@keyframes pinPop {
+    0% { transform: scale(1) }
+    50% { transform: scale(1.2) }
+    100% { transform: scale(1) }
 }
 
 .notification {
     position: fixed;
     bottom: 20px;
     left: 50%;
-    transform: translateX(-50%);
-    padding: 10px 20px;
-    background-color: #ff5733;
-    color: #fff;
-    font-size: 16px;
-    border-radius: 5px;
-    opacity: 0;
-    transition: opacity 0.5s ease;
-    z-index: 100;
+    transform: translateX(-50%) translateY(100%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 8px;
+    transition: transform 0.3s ease;
+    z-index: 1000;
 }
 
 .notification.show {
-    opacity: 1;
+    transform: translateX(-50%) translateY(0);
 }
 
-.animate {
-    animation: buttonClick 0.2s ease-in-out;
-}
-
-@keyframes buttonClick {
-    0% {
-        transform: scale(1);
-    }
-    50% {
-        transform: scale(1.1);
-    }
-    100% {
-        transform: scale(1);
-    }
-}
-`;
+.pin-view-btn i {
+    margin-right: 6px;
+}`;
 
 const styleSheet = document.createElement('style');
-styleSheet.type = 'text/css';
-styleSheet.innerText = styles;
+styleSheet.textContent = styles;
 document.head.appendChild(styleSheet);
