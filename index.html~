@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visual Explorer | Modern Image Search</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="cursor-glow"></div>
+<div class="grid-overlay"></div>
+
+<header class="app-header">
+    <div class="container">
+        <div class="logo-container">
+            <h1 class="logo">VisualExplorer</h1>
+            <div class="logo-accent"></div>
+        </div>
+
+        <div class="search-container">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Search high-resolution images...">
+                <button id="searchButton" class="search-btn">
+                    <i class="fas fa-search"></i>
+                    <span class="btn-text">Search</span>
+                </button>
+            </div>
+            <div class="search-tags">
+                <span class="tag">Nature</span>
+                <span class="tag">Architecture</span>
+                <span class="tag">Travel</span>
+                <span class="tag">Food</span>
+            </div>
+        </div>
+    </div>
+</header>
+
+<main class="main-content">
+    <div class="container">
+        <div class="filters">
+            <button class="filter-btn active">All</button>
+            <button class="filter-btn">Latest</button>
+            <button class="filter-btn">Popular</button>
+            <button class="filter-btn">Featured</button>
+        </div>
+
+        <div class="image-grid" id="imageGrid">
+            <!-- Images will be populated here by JavaScript -->
+        </div>
+
+        <div id="loading" class="loading-spinner">
+            <div class="spinner"></div>
+            <span>Loading amazing images...</span>
+        </div>
+
+        <div id="error" class="error-message"></div>
+    </div>
+</main>
+
+<footer class="app-footer">
+    <div class="container">
+        <p>Powered by Unsplash API • Created ️ by <span><a href="https://github.com/de-arnavgupta" >Arnav Gupta</a></span></p>
+    </div>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>

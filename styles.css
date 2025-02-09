@@ -1,0 +1,419 @@
+:root {
+    --primary-color: #00c6ff;
+    --secondary-color: #0072ff;
+    --accent-color: #00f2ff;
+    --text-color: rgba(255,255,255,0.95);
+    --text-secondary: rgba(255,255,255,0.7);
+    --background-color: #041526;
+    --card-bg: rgba(255, 255, 255, 0.05);
+    --error-color: #ff4757;
+    --success-color: #00c6ff;
+    --glow: 0 0 15px rgba(0, 198, 255, 0.3);
+    --transition: all 0.3s ease;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: var(--background-color);
+    min-height: 100vh;
+    font-family: 'Inter', sans-serif;
+    color: var(--text-color);
+    overflow-x: hidden;
+    position: relative;
+}
+
+.grid-overlay {
+    position: fixed;
+    inset: 0;
+    background-image:
+            linear-gradient(rgba(0, 198, 255, 0.07) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(0, 198, 255, 0.07) 1px, transparent 1px);
+    background-size: 50px 50px;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.cursor-glow {
+    position: fixed;
+    width: 400px;
+    height: 400px;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+    transition: all 0.1s ease;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    position: relative;
+    z-index: 3;
+}
+
+.app-header {
+    padding: 3rem 0;
+    position: relative;
+}
+
+.logo-container {
+    text-align: center;
+    margin-bottom: 3rem;
+    position: relative;
+    display: inline-block;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.logo {
+    font-family: 'Poppins', sans-serif;
+    font-size: 3.5rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    position: relative;
+    z-index: 2;
+}
+
+.logo-accent {
+    position: absolute;
+    inset: -10px;
+    background: linear-gradient(135deg,
+    rgba(0, 198, 255, 0.2),
+    rgba(0, 114, 255, 0.2)
+    );
+    filter: blur(20px);
+    z-index: 1;
+    border-radius: 20px;
+}
+
+.search-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.search-box {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+#searchInput {
+    flex: 1;
+    padding: 1.2rem 1.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid rgba(0, 198, 255, 0.3);
+    border-radius: 12px;
+    color: var(--text-color);
+    font-size: 1.1rem;
+    transition: var(--transition);
+}
+
+#searchInput:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: var(--glow);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.search-btn {
+    padding: 1.2rem 2.5rem;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    border: none;
+    border-radius: 12px;
+    color: var(--text-color);
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+}
+
+.search-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--glow);
+}
+
+.search-tags {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.tag {
+    padding: 0.5rem 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    cursor: pointer;
+    transition: var(--transition);
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.tag:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--primary-color);
+    color: var(--text-color);
+}
+
+.filters {
+    display: flex;
+    gap: 1rem;
+    margin: 2rem 0;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    padding: 0.8rem 1.5rem;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.filter-btn.active {
+    background: rgba(0, 198, 255, 0.1);
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+.filter-btn:hover {
+    border-color: var(--primary-color);
+    color: var(--text-color);
+}
+
+.image-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 2rem;
+    padding: 2rem 0;
+}
+
+.image-card {
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: var(--transition);
+    background: var(--card-bg);
+    isolation: isolate;
+}
+
+.image-card::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    background: linear-gradient(
+            45deg,
+            transparent 40%,
+            rgba(0, 198, 255, 0.1),
+            rgba(0, 114, 255, 0.1),
+            rgba(0, 198, 255, 0.1),
+            transparent 60%
+    );
+    z-index: -1;
+    border-radius: inherit;
+    transition: all 0.5s ease;
+    opacity: 0;
+    filter: blur(8px);
+}
+
+.image-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+            circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+            rgba(0, 198, 255, 0.15),
+            transparent 40%
+    );
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.image-card:hover {
+    transform: translateY(-5px);
+}
+
+.image-card:hover::before {
+    opacity: 1;
+    animation: rotateGradient 3s linear infinite;
+}
+
+.image-card:hover::after {
+    opacity: 1;
+}
+
+.image-card img {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+    transition: var(--transition);
+}
+
+@keyframes rotateGradient {
+    0% { background-position: 0% 0%; }
+    100% { background-position: 200% 200%; }
+}
+
+.image-info {
+    padding: 1rem;
+    background: linear-gradient(
+            to top,
+            rgba(4, 21, 38, 0.95),
+            rgba(4, 21, 38, 0.8)
+    );
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    transform: translateY(100%);
+    transition: var(--transition);
+}
+
+.image-card:hover .image-info {
+    transform: translateY(0);
+}
+
+.photographer {
+    font-weight: 500;
+    color: var(--text-color);
+    margin-bottom: 0.5rem;
+}
+
+.image-stats {
+    display: flex;
+    gap: 1rem;
+    opacity: 0.7;
+    font-size: 0.9rem;
+    margin: 0.5rem 0;
+}
+
+.image-stats span {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.view-link {
+    position: relative;
+    color: var(--primary-color);
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    display: inline-block;
+    overflow: hidden;
+}
+
+.view-link::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+            90deg,
+            transparent,
+            rgba(255, 255, 255, 0.2),
+            transparent
+    );
+    transition: 0.5s;
+}
+
+.view-link:hover::before {
+    left: 100%;
+}
+
+.loading-spinner {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 2rem;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(0, 198, 255, 0.3);
+    border-top-color: var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.error-message {
+    display: none;
+    background: rgba(255, 71, 87, 0.1);
+    border: 1px solid var(--error-color);
+    color: var(--error-color);
+    padding: 1rem;
+    border-radius: 8px;
+    text-align: center;
+    margin: 2rem 0;
+}
+
+.app-footer {
+    text-align: center;
+    padding: 2rem 0;
+    color: var(--text-secondary);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    margin-top: 4rem;
+}
+footer{
+    span{
+        font-size: 1.1rem;
+        color: #1a73e8;
+    }
+}
+
+@media (max-width: 768px) {
+    .logo {
+        font-size: 2.5rem;
+    }
+
+    .search-box {
+        flex-direction: column;
+    }
+
+    .search-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .image-grid {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 0 1rem;
+    }
+
+    .filters {
+        gap: 0.5rem;
+    }
+
+    .filter-btn {
+        padding: 0.6rem 1rem;
+        font-size: 0.9rem;
+    }
+}
