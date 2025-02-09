@@ -87,25 +87,34 @@ function createClickEffect(e) {
 }
 
 function setupInfiniteScroll() {
-    const options = {
-        root: null,
-        rootMargin: '100px',
-        threshold: 0.1
-    };
+    // Create and observe a sentinel element for infinite scrolling
+    const sentinel = document.createElement('div');
+    sentinel.className = 'sentinel';
+    sentinel.style.height = '1px'; // Make it invisible
+
+    const imageGrid = document.getElementById('imageGrid');
+    imageGrid.appendChild(sentinel);
 
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting && !isLoading && lastSearchQuery) {
-                currentPage++;
                 loadMoreImages();
             }
         });
-    }, options);
+    }, {
+        rootMargin: '100px'
+    });
 
-    const sentinel = document.createElement('div');
-    sentinel.className = 'scroll-sentinel';
-    document.getElementById('imageGrid').appendChild(sentinel);
     observer.observe(sentinel);
+
+    // Add scroll event listener as backup
+    window.addEventListener('scroll', () => {
+        if ((window.innerHeight + window.scrollY) >= document.documentElement.scrollHeight - 1000) {
+            if (!isLoading && lastSearchQuery) {
+                loadMoreImages();
+            }
+        }
+    });
 }
 
 async function loadMoreImages() {
@@ -114,6 +123,7 @@ async function loadMoreImages() {
     showLoading(true);
 
     try {
+        currentPage++;
         const response = await fetch(
             `${BASE_URL}?query=${lastSearchQuery}&page=${currentPage}&per_page=30`,
             { headers: { 'Authorization': `Client-ID ${ACCESS_KEY}` }}
@@ -122,16 +132,19 @@ async function loadMoreImages() {
         if (!response.ok) throw new Error('Network response was not ok');
 
         const data = await response.json();
-        currentImages = [...currentImages, ...data.results];
-
-        const activeFilter = document.querySelector('.filter-btn.active');
-        if (activeFilter) {
-            filterImages(activeFilter.textContent.toLowerCase());
-        } else {
-            displayImages(currentImages, true);
+        if (data.results && data.results.length > 0) {
+            currentImages = [...currentImages, ...data.results];
+            const activeFilter = document.querySelector('.filter-btn.active');
+            if (activeFilter && activeFilter.textContent.toLowerCase() !== 'all') {
+                filterImages(activeFilter.textContent.toLowerCase());
+            } else {
+                displayImages(data.results, true);
+            }
         }
     } catch (error) {
+        console.error('Error loading more images:', error);
         showError('Failed to load more images. Please try again.');
+        currentPage--; // Revert page increment on error
     } finally {
         isLoading = false;
         showLoading(false);
